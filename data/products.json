@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "name": "Farm fresh tomatoes",
+    "category": "Vegetables",
+    "weight": "500 g",
+    "price": 49,
+    "previousPrice": 45,
+    "rating": "4.9",
+    "badge": "PICKED TODAY",
+    "imageUrl": "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=700&q=80",
+    "imageAlt": "Fresh ripe tomatoes"
+  },
+  {
+    "id": 2,
+    "name": "Kashmiri red apples",
+    "category": "Fruits",
+    "weight": "4 pcs",
+    "price": 120,
+    "previousPrice": null,
+    "rating": "4.8",
+    "badge": "FARM FAVORITE",
+    "imageUrl": "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=700&q=80",
+    "imageAlt": "Crisp red apples"
+  },
+  {
+    "id": 4,
+    "name": "Sweet baby carrots",
+    "category": "Vegetables",
+    "weight": "500 g",
+    "price": 42,
+    "previousPrice": null,
+    "rating": "4.8",
+    "badge": "PICKED TODAY",
+    "imageUrl": "https://images.unsplash.com/photo-1445282768818-728615cc910a?auto=format&fit=crop&w=700&q=80",
+    "imageAlt": "Fresh carrots with green tops"
+  },
+  {
+    "id": 7,
+    "name": "Tender baby spinach",
+    "category": "Vegetables",
+    "weight": "200 g",
+    "price": 30,
+    "previousPrice": null,
+    "rating": "4.6",
+    "badge": "PICKED TODAY",
+    "imageUrl": "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=700&q=80",
+    "imageAlt": "A bundle of leafy green spinach"
+  },
+  {
+    "id": 8,
+    "name": "Healthy Banana",
+    "price": 120,
+    "imageUrl": "/uploads/products/8e95b1d0-68e4-46ca-ab22-0b1531dae765.webp"
+  }
+]

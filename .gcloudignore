@@ -1,0 +1,8 @@
+.env
+.env.*
+!.env.example
+.git/
+node_modules/
+npm-debug.log
+public/uploads/products/*
+!public/uploads/products/.gitkeep
