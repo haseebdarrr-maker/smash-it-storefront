@@ -3,13 +3,7 @@ const path = require("node:path");
 
 const sourceDirectory = __dirname;
 const outputDirectory = path.join(sourceDirectory, "dist");
-const apiUrlValue = process.env.SMASH_IT_API_URL;
-
-if (!apiUrlValue) {
-  throw new Error(
-    "Set SMASH_IT_API_URL in Netlify to the HTTPS URL of the deployed Smash It API service, for example https://your-service.onrender.com."
-  );
-}
+const apiUrlValue = process.env.SMASH_IT_API_URL || "https://smash-it-3xzp.onrender.com";
 
 let apiUrl;
 try {
