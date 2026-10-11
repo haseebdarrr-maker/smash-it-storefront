@@ -53,7 +53,7 @@ app.use(helmet({
       frameAncestors: ["'none'"],
       imgSrc: ["'self'", "data:", "https://images.unsplash.com"],
       objectSrc: ["'none'"],
-      scriptSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://pagead2.googlesyndication.com"],
       styleSrc: ["'self'", "https://fonts.googleapis.com"]
     }
   }
