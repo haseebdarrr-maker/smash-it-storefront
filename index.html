@@ -30,6 +30,9 @@
     </nav>
 
     <div class="header-actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">
+        <span class="theme-toggle__icon" aria-hidden="true">☀</span>
+      </button>
       <label class="search-box">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg>
         <span class="visually-hidden">Search products</span>
@@ -63,10 +66,10 @@
     </section>
 
     <section class="benefits" id="promise" aria-label="Why shop with Smash It">
-      <div class="benefit"><span class="benefit__icon" aria-hidden="true">✳</span><span><strong>Picked with care</strong><small>Goodness in every bag</small></span></div>
-      <div class="benefit"><span class="benefit__icon" aria-hidden="true">◷</span><span><strong>At your door in 30</strong><small>Fresh, without the wait</small></span></div>
-      <div class="benefit"><span class="benefit__icon" aria-hidden="true">♡</span><span><strong>Good for your wallet</strong><small>Lovely quality, fair prices</small></span></div>
-      <div class="benefit"><span class="benefit__icon" aria-hidden="true">↺</span><span><strong>Not quite right?</strong><small>We’ll make it right</small></span></div>
+      <div class="benefit"><span class="benefit__icon" aria-hidden="true">✳</span><span><strong>Picked with care</strong><small>From trusted growers</small></span></div>
+      <div class="benefit"><span class="benefit__icon" aria-hidden="true">◷</span><span><strong>Delivered in 30 min</strong><small>Fresh to your door</small></span></div>
+      <div class="benefit"><span class="benefit__icon" aria-hidden="true">♡</span><span><strong>Fair everyday pricing</strong><small>Quality without the fuss</small></span></div>
+      <div class="benefit"><span class="benefit__icon" aria-hidden="true">↺</span><span><strong>Easy swaps & support</strong><small>We make it simple</small></span></div>
     </section>
 
     <section class="shop-section" id="shop" aria-labelledby="shopTitle">
@@ -111,6 +114,7 @@
   <footer class="site-footer">
     <a class="brand brand--footer" href="#home" aria-label="Smash It home"><span class="brand__mark" aria-hidden="true">s.</span><span class="brand__name">smash<span>it</span></span></a>
     <p>Fresh things, delivered with a little extra love.</p>
+    <button class="admin-link" id="trackOrderButton" type="button">Track order</button>
     <button class="admin-link" id="openAdmin" type="button">Admin login</button>
     <span>© <span id="year">2026</span> Smash It. Made for your everyday.</span>
   </footer>
@@ -138,6 +142,7 @@
       <p class="eyebrow">ALMOST THERE</p>
       <h2 id="checkoutTitle">Make it <span>yours.</span></h2>
       <p class="checkout-intro">Where should we bring your fresh finds?</p>
+      <div class="checkout-summary" id="checkoutSummary" aria-live="polite"></div>
       <form id="checkoutForm">
         <label for="customerName">Your name</label>
         <input id="customerName" name="customerName" autocomplete="name" maxlength="100" required>
@@ -160,6 +165,41 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog class="track-dialog" id="trackDialog" aria-labelledby="trackTitle">
+    <button class="icon-button checkout-dialog__close" id="closeTrackDialog" type="button" aria-label="Close order tracking">×</button>
+    <div id="trackLookupView">
+      <p class="eyebrow">ORDER TRACKING</p>
+      <h2 id="trackTitle">Check your <span>delivery.</span></h2>
+      <p class="checkout-intro">Enter your order ID and mobile number to track updates.</p>
+      <form id="trackOrderForm" class="admin-form">
+        <label for="trackOrderId">Order ID</label>
+        <input id="trackOrderId" name="orderId" maxlength="100" required>
+        <label for="trackPhone">Mobile number</label>
+        <input id="trackPhone" name="phone" type="tel" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required>
+        <button class="button button--dark admin-submit" type="submit">Track order <span aria-hidden="true">↗</span></button>
+        <p class="admin-message" id="trackMessage" role="alert" hidden></p>
+      </form>
+    </div>
+    <div id="trackDetailsView" hidden>
+      <p class="eyebrow">ORDER STATUS</p>
+      <h2 id="trackStatusHeading">In prep</h2>
+      <div class="track-order-card" id="trackOrderCard"></div>
+      <form id="trackUpdateForm" class="track-update-form">
+        <label for="trackEditAddress">Delivery address</label>
+        <textarea id="trackEditAddress" name="address" rows="3" maxlength="500" required></textarea>
+        <label for="trackEditPhone">Mobile number</label>
+        <input id="trackEditPhone" name="phone" type="tel" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required>
+        <label for="trackEditName">Name</label>
+        <input id="trackEditName" name="name" maxlength="100" required>
+        <div class="track-actions">
+          <button class="button button--dark" type="submit">Save changes</button>
+          <button class="button button--ghost" id="cancelOrderButton" type="button">Cancel order</button>
+        </div>
+        <p class="admin-message" id="trackUpdateMessage" role="alert" hidden></p>
+      </form>
+    </div>
+  </dialog>
 
   <dialog class="admin-dialog" id="adminDialog" aria-labelledby="adminTitle">
     <button class="icon-button admin-dialog__close" id="closeAdmin" type="button" aria-label="Close admin">×</button>
@@ -187,6 +227,20 @@
         <button class="admin-tab" type="button" data-admin-page="orders" aria-pressed="false">Orders</button>
       </nav>
       <p class="admin-message" id="adminPanelMessage" role="status" hidden></p>
+      <div class="admin-overview" id="adminOverview" aria-live="polite">
+        <div class="admin-overview__card">
+          <span class="admin-overview__label">Products</span>
+          <strong id="adminProductCount">0</strong>
+        </div>
+        <div class="admin-overview__card">
+          <span class="admin-overview__label">Orders</span>
+          <strong id="adminOrderCount">0</strong>
+        </div>
+        <div class="admin-overview__card">
+          <span class="admin-overview__label">Delivery</span>
+          <strong>30 min</strong>
+        </div>
+      </div>
       <section id="adminProductsPage" aria-label="Manage products">
         <form id="adminAddForm" class="admin-add-form">
           <h3>Add a product</h3>

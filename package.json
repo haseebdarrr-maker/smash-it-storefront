@@ -7,7 +7,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "netlify:build": "node netlify-build.js"
   },
   "dependencies": {
     "@google-cloud/firestore": "^9.3.1",

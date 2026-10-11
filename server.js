@@ -203,6 +203,12 @@ async function ensureOrdersFile() {
   }
 }
 
+function normalizeProductId(value) {
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number" && Number.isFinite(value) && value >= 0) return String(value);
+  return "";
+}
+
 function validateProductInput(input, partial = false) {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
     return { error: "Provide product details as a JSON object." };
@@ -327,13 +333,14 @@ app.post("/orders", async (request, response, next) => {
   }
   const quantities = new Map();
   for (const item of items) {
-    if (!item || typeof item.productId !== "string" || !item.productId.trim() ||
+    const productId = normalizeProductId(item?.productId);
+    if (!item || !productId ||
       !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 99 ||
-      quantities.has(item.productId)) {
+      quantities.has(productId)) {
       response.status(400).json({ message: "Order items must have a product and a quantity between 1 and 99." });
       return;
     }
-    quantities.set(item.productId, item.quantity);
+    quantities.set(productId, item.quantity);
   }
 
   try {
@@ -375,6 +382,104 @@ app.post("/orders", async (request, response, next) => {
       status: createdOrder.status,
       message: "Order placed successfully"
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/orders/lookup", async (request, response, next) => {
+  const orderId = typeof request.body?.orderId === "string" ? request.body.orderId.trim() : "";
+  const phone = typeof request.body?.phone === "string" ? request.body.phone.trim() : "";
+  if (!orderId || !/^\d{10}$/.test(phone)) {
+    response.status(400).json({ message: "Provide the order ID and the mobile number used for the order." });
+    return;
+  }
+
+  try {
+    const orders = cloudStore ? await cloudStore.getOrders() : await readOrders();
+    const order = orders.find((entry) => entry.id === orderId);
+    if (!order) {
+      response.status(404).json({ message: "We could not find an order with that ID." });
+      return;
+    }
+    if (order.customer.phone !== phone) {
+      response.status(404).json({ message: "The order ID and mobile number do not match." });
+      return;
+    }
+    response.json(order);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch("/orders/:id", async (request, response, next) => {
+  const targetPhone = typeof request.body?.phone === "string" ? request.body.phone.trim() : "";
+  const nextStatus = typeof request.body?.status === "string" ? request.body.status.trim() : "";
+  const nextCustomer = request.body?.customer;
+  const validPhone = /^\d{10}$/;
+
+  if (!targetPhone || !validPhone.test(targetPhone)) {
+    response.status(400).json({ message: "Provide the mobile number used for the order." });
+    return;
+  }
+
+  try {
+    const orders = cloudStore ? await cloudStore.getOrders() : await readOrders();
+    const order = orders.find((entry) => entry.id === request.params.id);
+    if (!order) {
+      response.status(404).json({ message: "Order not found." });
+      return;
+    }
+    if (order.customer.phone !== targetPhone) {
+      response.status(401).json({ message: "The mobile number does not match this order." });
+      return;
+    }
+
+    const updates = {};
+    const nextName = typeof nextCustomer?.name === "string" ? nextCustomer.name.trim() : "";
+    const nextAddress = typeof nextCustomer?.address === "string" ? nextCustomer.address.trim() : "";
+    const nextPhone = typeof nextCustomer?.phone === "string" ? nextCustomer.phone.trim() : targetPhone;
+
+    if (nextCustomer && typeof nextCustomer === "object") {
+      if (!nextName || nextName.length > 100 || !nextAddress || nextAddress.length > 500 || !validPhone.test(nextPhone)) {
+        response.status(400).json({ message: "Update the customer name, delivery address, and mobile number with valid details." });
+        return;
+      }
+      updates.customer = { ...order.customer, name: nextName, address: nextAddress, phone: nextPhone };
+    }
+
+    if (nextStatus) {
+      if (!orderStatuses.has(nextStatus)) {
+        response.status(400).json({ message: "Choose a valid order status." });
+        return;
+      }
+      if (nextStatus === "cancelled" && ["cancelled", "delivered"].includes(order.status)) {
+        response.status(400).json({ message: "This order cannot be cancelled in its current state." });
+        return;
+      }
+      updates.status = nextStatus;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      response.status(400).json({ message: "Choose an update for your order." });
+      return;
+    }
+
+    const updatedOrder = cloudStore
+      ? await cloudStore.updateOrder(request.params.id, updates)
+      : await mutateOrders(async (orderList) => {
+        const currentOrder = orderList.find((entry) => entry.id === request.params.id);
+        if (!currentOrder) return { write: false, order: null };
+        Object.assign(currentOrder, updates);
+        return { write: true, order: currentOrder };
+      }).then((result) => result.order);
+
+    if (!updatedOrder) {
+      response.status(404).json({ message: "Order not found." });
+      return;
+    }
+
+    response.json({ id: updatedOrder.id, status: updatedOrder.status, message: "Your order has been updated." });
   } catch (error) {
     next(error);
   }

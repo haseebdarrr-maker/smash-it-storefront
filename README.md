@@ -31,6 +31,15 @@ Open `http://localhost:3000`. Do not open `index.html` directly from the file sy
 
 This Blueprint deploys the Node.js shop as a public web service in Render's Singapore region. It uses local file storage, so **do not rely on it for real customer orders**: free services sleep when idle and have an ephemeral filesystem. Orders, product changes, and uploaded photos can be lost whenever the service sleeps, restarts, or is redeployed. The free service can also take about a minute to wake for the first customer after idle time.
 
+This app needs its Express API as well as its static storefront. A static-only Netlify deployment does not run the API, so admin login and other API features return an HTML 404 there. To keep the storefront on Netlify, deploy the API on Render and configure Netlify's proxy:
+
+1. Deploy the `render.yaml` Blueprint below and set `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `JWT_SECRET` in Render. Wait until the Render `/health` endpoint returns `{"status":"ok"}`.
+2. In Netlify, connect this repository and set the site environment variable `SMASH_IT_API_URL` to the Render service's HTTPS origin, for example `https://your-service.onrender.com` (no path or trailing endpoint).
+3. Publish from the repository root. `netlify.toml` runs `npm run netlify:build`, which publishes only the storefront files and writes same-origin proxy rules for API calls and uploaded product photos. The build intentionally fails if `SMASH_IT_API_URL` is missing or invalid.
+4. Open the Netlify URL after the deploy succeeds. Product listing and admin login will use the Render API through the proxy; do not use the Render URL as a second storefront.
+
+Product photos in `public/uploads/products/` are included in Git so the Render deployment can serve the images already referenced by `data/products.json`. Include those photo files when committing the catalog. New photos uploaded through admin after deployment are stored by the API service; with Render's free local-file plan, uploaded photos, product edits, and orders can be lost when the service restarts or redeploys. Use the Google Cloud storage setup for durable production data.
+
 1. Put the project in a **private** GitHub repository and connect that repository to a Render account. Do not upload `.env`, `node_modules`, or customer-order data.
 2. In Render, create a new **Blueprint** from the connected repository and deploy the `render.yaml` configuration. Select the Free plan; do not add a paid instance or disk.
 3. When prompted for Blueprint environment variables, enter `ADMIN_EMAIL`, set a new strong `ADMIN_PASSWORD` that has never been shared in chat, and provide a unique random `JWT_SECRET` of at least 32 characters. Keep these values in Render's environment-variable settings, not in the repository.

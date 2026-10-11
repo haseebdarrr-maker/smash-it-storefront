@@ -3,3 +3,8 @@ node_modules/
 /data/orders.json
 public/uploads/products/*
 !public/uploads/products/.gitkeep
+!public/uploads/products/*.jpg
+!public/uploads/products/*.png
+!public/uploads/products/*.webp
+!public/uploads/products/*.gif
+/dist/

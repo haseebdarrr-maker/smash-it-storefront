@@ -1,7 +1,7 @@
 let products = [
   {
     id: "tomatoes",
-    name: "Farm fresh tomatoes",
+    name: "Farm Fresh Tomatoes",
     category: "Vegetables",
     weight: "500 g",
     price: 35,
@@ -13,7 +13,7 @@ let products = [
   },
   {
     id: "apples",
-    name: "Kashmiri red apples",
+    name: "Kashmiri Red Apples",
     category: "Fruits",
     weight: "4 pcs",
     price: 120,
@@ -37,7 +37,7 @@ let products = [
   },
   {
     id: "carrots",
-    name: "Sweet baby carrots",
+    name: "Sweet Baby Carrots",
     category: "Vegetables",
     weight: "500 g",
     price: 42,
@@ -73,7 +73,7 @@ let products = [
   },
   {
     id: "spinach",
-    name: "Tender baby spinach",
+    name: "Tender Baby Spinach",
     category: "Vegetables",
     weight: "200 g",
     price: 30,
@@ -123,6 +123,15 @@ const adminLoginView = document.querySelector("#adminLoginView");
 const adminPanel = document.querySelector("#adminPanel");
 const adminProductList = document.querySelector("#adminProductList");
 const adminOrderList = document.querySelector("#adminOrderList");
+const themeToggle = document.querySelector("#themeToggle");
+const checkoutSummary = document.querySelector("#checkoutSummary");
+const trackDialog = document.querySelector("#trackDialog");
+const trackOrderForm = document.querySelector("#trackOrderForm");
+const trackUpdateForm = document.querySelector("#trackUpdateForm");
+const trackLookupView = document.querySelector("#trackLookupView");
+const trackDetailsView = document.querySelector("#trackDetailsView");
+const trackOrderCard = document.querySelector("#trackOrderCard");
+const trackStatusHeading = document.querySelector("#trackStatusHeading");
 const DELIVERY_CHARGE = 15;
 const ORDER_STATUSES = [
   ["new", "New"],
@@ -132,6 +141,204 @@ const ORDER_STATUSES = [
   ["cancelled", "Cancelled"]
 ];
 let toastTimeout;
+
+function applyTheme(theme) {
+  const selectedTheme = theme === "dark" ? "dark" : "light";
+  document.body.dataset.theme = selectedTheme;
+  const icon = themeToggle?.querySelector(".theme-toggle__icon");
+  if (icon) icon.textContent = selectedTheme === "dark" ? "☾" : "☀";
+  if (themeToggle) themeToggle.setAttribute("aria-label", selectedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode");
+  try {
+    localStorage.setItem("smash-it-theme", selectedTheme);
+  } catch (error) {
+    // ignore storage failures for older browsers or restricted environments
+  }
+}
+
+function toggleTheme() {
+  const currentTheme = document.body.dataset.theme === "dark" ? "dark" : "light";
+  applyTheme(currentTheme === "dark" ? "light" : "dark");
+}
+
+function renderCheckoutSummary() {
+  if (!checkoutSummary) return;
+  const entries = [...state.cart.entries()].map(([productId, quantity]) => {
+    const product = products.find((item) => item.id === productId);
+    if (!product) return null;
+    return { product, quantity };
+  }).filter(Boolean);
+
+  const subtotal = entries.reduce((sum, { product, quantity }) => sum + product.price * quantity, 0);
+  const itemCount = entries.reduce((sum, { quantity }) => sum + quantity, 0);
+  const total = subtotal + (itemCount > 0 ? DELIVERY_CHARGE : 0);
+
+  if (entries.length === 0) {
+    checkoutSummary.innerHTML = '<p class="checkout-summary__item"><span>Your basket is empty</span><strong>₹0</strong></p>';
+    return;
+  }
+
+  checkoutSummary.innerHTML = [
+    ...entries.map(({ product, quantity }) => `
+      <div class="checkout-summary__item">
+        <span>${escapeHtml(product.name)} × ${quantity}</span>
+        <strong>${formatPrice(product.price * quantity)}</strong>
+      </div>
+    `),
+    '<div class="checkout-summary__item"><span>Delivery</span><strong>' + formatPrice(DELIVERY_CHARGE) + '</strong></div>',
+    '<div class="checkout-summary__total"><span>Total</span><strong>' + formatPrice(total) + '</strong></div>'
+  ].join("");
+}
+
+function formatOrderStatus(status) {
+  const labels = {
+    new: "New",
+    preparing: "Preparing",
+    "out-for-delivery": "Out for delivery",
+    delivered: "Delivered",
+    cancelled: "Cancelled"
+  };
+  return labels[status] || "Update soon";
+}
+
+function setTrackMessage(message, isError = false) {
+  const element = document.querySelector("#trackMessage");
+  if (!element) return;
+  element.textContent = message;
+  element.hidden = !message;
+  element.setAttribute("role", isError ? "alert" : "status");
+}
+
+function setTrackUpdateMessage(message, isError = false) {
+  const element = document.querySelector("#trackUpdateMessage");
+  if (!element) return;
+  element.textContent = message;
+  element.hidden = !message;
+  element.setAttribute("role", isError ? "alert" : "status");
+}
+
+async function lookupCustomerOrder(orderId, phone) {
+  const result = await apiRequest("/orders/lookup", {
+    method: "POST",
+    body: JSON.stringify({ orderId, phone })
+  });
+  if (!result || typeof result.id !== "string") {
+    throw new Error("We could not load this order.");
+  }
+  return result;
+}
+
+function renderTrackedOrder(order) {
+  if (!order || !trackOrderCard || !trackStatusHeading) return;
+  const itemList = order.items.map((item) => `
+    <div class="track-order-card__row">
+      <span>${escapeHtml(item.name)} × ${escapeHtml(item.quantity)}</span>
+      <strong>${formatPrice(item.unitPrice * item.quantity)}</strong>
+    </div>
+  `).join("");
+
+  trackStatusHeading.textContent = formatOrderStatus(order.status);
+  trackOrderCard.innerHTML = `
+    <div class="track-order-card__row"><span>Order number</span><strong>#${escapeHtml(order.id.slice(0, 8))}</strong></div>
+    <div class="track-order-card__row"><span>Customer</span><strong>${escapeHtml(order.customer.name)}</strong></div>
+    <div class="track-order-card__row"><span>Phone</span><strong>${escapeHtml(order.customer.phone)}</strong></div>
+    <div class="track-order-card__row"><span>Address</span><strong>${escapeHtml(order.customer.address)}</strong></div>
+    <div class="track-order-card__row"><span>Subtotal</span><strong>${formatPrice(order.subtotal)}</strong></div>
+    <div class="track-order-card__row"><span>Delivery</span><strong>${formatPrice(order.deliveryCharge)}</strong></div>
+    <div class="track-order-card__row"><span>Total</span><strong>${formatPrice(order.total)}</strong></div>
+    <div class="track-order-card__row"><span>Items</span></div>
+    ${itemList}
+  `;
+  document.querySelector("#trackEditName").value = order.customer.name;
+  document.querySelector("#trackEditPhone").value = order.customer.phone;
+  document.querySelector("#trackEditAddress").value = order.customer.address;
+  const canEdit = order.status !== "delivered" && order.status !== "cancelled";
+  document.querySelector("#trackEditName").disabled = !canEdit;
+  document.querySelector("#trackEditPhone").disabled = !canEdit;
+  document.querySelector("#trackEditAddress").disabled = !canEdit;
+  document.querySelector("#cancelOrderButton").disabled = !canEdit;
+}
+
+function showTrackOrderDetails(order) {
+  renderTrackedOrder(order);
+  trackLookupView.hidden = true;
+  trackDetailsView.hidden = false;
+}
+
+async function handleTrackLookup(event) {
+  event.preventDefault();
+  const formData = new FormData(event.currentTarget);
+  const orderId = formData.get("orderId").toString().trim();
+  const phone = formData.get("phone").toString().trim();
+  if (!orderId || !/^\d{10}$/.test(phone)) {
+    setTrackMessage("Enter a valid order ID and 10-digit mobile number.", true);
+    return;
+  }
+
+  try {
+    setTrackMessage("Looking up your order…");
+    const order = await lookupCustomerOrder(orderId, phone);
+    showTrackOrderDetails(order);
+    setTrackMessage("");
+  } catch (error) {
+    setTrackMessage(error.message, true);
+  }
+}
+
+async function handleTrackOrderUpdate(event) {
+  event.preventDefault();
+  if (!trackDialog || trackDetailsView.hidden) return;
+  const orderId = document.querySelector("#trackOrderId").value.trim();
+  const phone = document.querySelector("#trackPhone").value.trim();
+  if (!orderId || !/^\d{10}$/.test(phone)) {
+    setTrackUpdateMessage("Use the saved order ID and mobile number to update your order.", true);
+    return;
+  }
+
+  const formData = new FormData(event.currentTarget);
+  const customer = {
+    name: formData.get("name").toString().trim(),
+    phone: formData.get("phone").toString().trim(),
+    address: formData.get("address").toString().trim()
+  };
+
+  try {
+    setTrackUpdateMessage("Saving your changes…");
+    const result = await apiRequest(`/orders/${encodeURIComponent(orderId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ phone, customer })
+    });
+    const refreshedOrder = await lookupCustomerOrder(orderId, customer.phone);
+    showTrackOrderDetails(refreshedOrder);
+    setTrackUpdateMessage(result.message || "Your order has been updated.");
+  } catch (error) {
+    setTrackUpdateMessage(error.message, true);
+  }
+}
+
+async function handleCancelOrder() {
+  const orderId = document.querySelector("#trackOrderId").value.trim();
+  const phone = document.querySelector("#trackPhone").value.trim();
+  if (!orderId || !/^\d{10}$/.test(phone)) {
+    setTrackUpdateMessage("Use the saved order ID and mobile number to cancel the order.", true);
+    return;
+  }
+
+  const confirmed = window.confirm("Cancel this order? This action cannot be undone.");
+  if (!confirmed) return;
+
+  try {
+    setTrackUpdateMessage("Cancelling your order…");
+    const result = await apiRequest(`/orders/${encodeURIComponent(orderId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ phone, status: "cancelled" })
+    });
+    const refreshedOrder = await lookupCustomerOrder(orderId, phone);
+    showTrackOrderDetails(refreshedOrder);
+    setTrackUpdateMessage(result.message || "Your order has been cancelled.");
+  } catch (error) {
+    setTrackUpdateMessage(error.message, true);
+  }
+}
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (character) => ({
@@ -165,7 +372,11 @@ async function apiRequest(path, options = {}) {
     try {
       result = JSON.parse(responseText);
     } catch (error) {
-      throw new Error("The shop API returned an invalid response.");
+      const contentType = response.headers.get("content-type") || "unknown content type";
+      throw new Error(
+        `The shop API returned a non-JSON response (HTTP ${response.status}, ${contentType}). ` +
+        "Open the storefront through the Smash It server and make sure this address also serves the API."
+      );
     }
   }
 
@@ -264,6 +475,7 @@ async function refreshProducts() {
   }
   renderProducts();
   renderCart();
+  renderAdminSummary();
   renderAdminProducts();
 }
 
@@ -363,7 +575,7 @@ function renderCart() {
       </article>
     `;
   }).join("");
-
+  renderCheckoutSummary();
 }
 
 function setAdminMessage(element, message, isError = false) {
@@ -400,6 +612,13 @@ function showAdminPage(page) {
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-pressed", String(isActive));
   });
+}
+
+function renderAdminSummary() {
+  const productCount = document.querySelector("#adminProductCount");
+  const orderCount = document.querySelector("#adminOrderCount");
+  if (productCount) productCount.textContent = String(products.length);
+  if (orderCount) orderCount.textContent = String(state.orders.length);
 }
 
 function renderAdminOrders() {
@@ -446,6 +665,7 @@ async function loadAdminOrders() {
     const orders = await apiRequest("/orders");
     if (!Array.isArray(orders)) throw new Error("The order API did not return an order list.");
     state.orders = orders;
+    renderAdminSummary();
     renderAdminOrders();
     setAdminMessage(document.querySelector("#adminPanelMessage"), "");
   } catch (error) {
@@ -477,6 +697,7 @@ async function handleAdminOrderAction(event) {
 }
 
 function renderAdminProducts() {
+  renderAdminSummary();
   if (!adminProductList || adminPanel.hidden) return;
   if (products.length === 0) {
     adminProductList.innerHTML = '<p class="admin-empty">No products yet. Add your first product above.</p>';
@@ -678,6 +899,7 @@ function openCart() {
   drawerBackdrop.hidden = false;
   requestAnimationFrame(() => drawerBackdrop.classList.add("is-visible"));
   document.body.classList.add("no-scroll");
+  renderCheckoutSummary();
   document.querySelector("#closeCart").focus();
 }
 
@@ -750,12 +972,27 @@ document.querySelector("#adminLogout").addEventListener("click", signOutAdmin);
 adminDialog.addEventListener("close", () => document.querySelector("#openAdmin").focus());
 document.querySelector("#checkoutButton").addEventListener("click", () => {
   closeCart();
+  renderCheckoutSummary();
   document.querySelector("#checkoutForm").reset();
   document.querySelector("#checkoutContent").hidden = false;
   document.querySelector("#checkoutSuccess").hidden = true;
   document.querySelector("#checkoutDialog").showModal();
   document.querySelector("#customerName").focus();
 });
+
+document.querySelector("#trackOrderButton").addEventListener("click", () => {
+  trackOrderForm.reset();
+  setTrackMessage("");
+  setTrackUpdateMessage("");
+  trackLookupView.hidden = false;
+  trackDetailsView.hidden = true;
+  trackDialog.showModal();
+  document.querySelector("#trackOrderId").focus();
+});
+document.querySelector("#closeTrackDialog").addEventListener("click", () => trackDialog.close());
+trackOrderForm.addEventListener("submit", handleTrackLookup);
+trackUpdateForm.addEventListener("submit", handleTrackOrderUpdate);
+document.querySelector("#cancelOrderButton").addEventListener("click", handleCancelOrder);
 document.querySelector("#closeCheckout").addEventListener("click", () => document.querySelector("#checkoutDialog").close());
 document.querySelector("#checkoutForm").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -800,6 +1037,18 @@ document.querySelector("#checkoutForm").addEventListener("submit", async (event)
 });
 document.querySelector("#finishCheckout").addEventListener("click", () => document.querySelector("#checkoutDialog").close());
 document.querySelector("#checkoutDialog").addEventListener("close", () => document.querySelector("#cartTrigger").focus());
+if (themeToggle) {
+  const storedTheme = (() => {
+    try {
+      return localStorage.getItem("smash-it-theme");
+    } catch (error) {
+      return null;
+    }
+  })();
+  applyTheme(storedTheme === "dark" ? "dark" : "light");
+  themeToggle.addEventListener("click", toggleTheme);
+}
+
 document.addEventListener("keydown", (event) => {
   if (event.key === "/" && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) {
     event.preventDefault();

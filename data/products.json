@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": "Farm fresh tomatoes",
+    "name": "Farm Fresh Tomatoes",
     "category": "Vegetables",
     "weight": "500 g",
     "price": 49,
@@ -13,7 +13,7 @@
   },
   {
     "id": 2,
-    "name": "Kashmiri red apples",
+    "name": "Kashmiri Red Apples",
     "category": "Fruits",
     "weight": "4 pcs",
     "price": 120,
@@ -25,7 +25,7 @@
   },
   {
     "id": 4,
-    "name": "Sweet baby carrots",
+    "name": "Sweet Baby Carrots",
     "category": "Vegetables",
     "weight": "500 g",
     "price": 42,
@@ -37,7 +37,7 @@
   },
   {
     "id": 7,
-    "name": "Tender baby spinach",
+    "name": "Tender Baby Spinach",
     "category": "Vegetables",
     "weight": "200 g",
     "price": 30,
@@ -52,5 +52,137 @@
     "name": "Healthy Banana",
     "price": 120,
     "imageUrl": "/uploads/products/8e95b1d0-68e4-46ca-ab22-0b1531dae765.webp"
+  },
+  {
+    "id": 9,
+    "name": "Good Day Biscuit",
+    "price": 10,
+    "imageUrl": "/uploads/products/5b768c0a-06ce-44e4-a396-4434f065e71e.jpg"
+  },
+  {
+    "id": 10,
+    "name": "Britania Cake",
+    "price": 35,
+    "imageUrl": "/uploads/products/4214ebd6-3dd9-436a-bab2-1ca4a1877fd0.jpg"
+  },
+  {
+    "id": 11,
+    "name": "Pepsi Cold Drink",
+    "price": 20,
+    "imageUrl": "/uploads/products/ce69d43e-ab8c-4d2c-acf9-ec02a08ccaf7.jpg"
+  },
+  {
+    "id": 12,
+    "name": "Slice Drink",
+    "price": 80,
+    "imageUrl": "/uploads/products/1ecd42ea-8053-480e-8d7e-69d427903193.jpg"
+  },
+  {
+    "id": 13,
+    "name": "Coca-Cola",
+    "price": 20,
+    "imageUrl": "/uploads/products/229d9b68-5129-4c10-bd45-abbba47a878c.jpg"
+  },
+  {
+    "id": 14,
+    "name": "Khatta Meetha",
+    "price": 10,
+    "imageUrl": "/uploads/products/1231a2b4-a488-49ca-9325-b538c02475c6.jpg"
+  },
+  {
+    "id": 15,
+    "name": "Amul Butter Medium Pack",
+    "price": 65,
+    "imageUrl": "/uploads/products/d246ec67-3cbb-4dca-8104-6d4a84b3bda5.jpg"
+  },
+  {
+    "id": 16,
+    "name": "Amul Butter Large Pack",
+    "price": 450,
+    "imageUrl": "/uploads/products/777dab6c-c34f-4488-b44d-e3e1702213c3.jpg"
+  },
+  {
+    "id": 17,
+    "name": "Bourbon Biscuit",
+    "price": 10,
+    "imageUrl": "/uploads/products/970a539c-a7aa-4508-9325-b8ab021aa5c1.jpg"
+  },
+  {
+    "id": 18,
+    "name": "Tedhe Medhe",
+    "price": 20,
+    "imageUrl": "/uploads/products/2323a051-2737-42e8-998b-7e917c9a043f.jpg"
+  },
+  {
+    "id": 19,
+    "name": "Khyber Curd",
+    "price": 40,
+    "imageUrl": "/uploads/products/8e5fbc9f-a819-4ea5-85c0-ba5d22d2ba2a.jpg"
+  },
+  {
+    "id": 20,
+    "name": "Khyber Curd",
+    "price": 70,
+    "imageUrl": "/uploads/products/16065007-8d17-4aa4-8e16-2869c1d5481c.jpg"
+  },
+  {
+    "id": 21,
+    "name": "Amul Fresh Milk",
+    "price": 20,
+    "imageUrl": "/uploads/products/ffe312da-e9c3-44b1-a392-fc5456b39de3.jpg"
+  },
+  {
+    "id": 22,
+    "name": "Amul Fresh Milk",
+    "price": 50,
+    "imageUrl": "/uploads/products/447d041e-14bb-422b-96fc-1454714aa0cf.jpg"
+  },
+  {
+    "id": 23,
+    "name": "Potato Biscuit Medium Pack",
+    "price": 45,
+    "imageUrl": "/uploads/products/53b9ab37-2317-41a1-b03d-170e7fb287ea.jpg"
+  },
+  {
+    "id": 24,
+    "name": "Potato Biscuit Small Pack",
+    "price": 10,
+    "imageUrl": "/uploads/products/da699150-fbdf-405c-b448-77f7294cb1cc.jpg"
+  },
+  {
+    "id": 25,
+    "name": "Dairy Milk Chocolate",
+    "price": 25,
+    "imageUrl": "/uploads/products/bb0dfa83-18a4-4b5e-a53a-3be932e2af1d.jpg"
+  },
+  {
+    "id": 26,
+    "name": "Dairy Milk Chocolate",
+    "price": 10,
+    "imageUrl": "/uploads/products/17c8b922-3b9a-4184-b997-cf22c449ae42.jpg"
+  },
+  {
+    "id": 27,
+    "name": "Dairy Milk Silk",
+    "price": 160,
+    "imageUrl": "/uploads/products/84d50433-b5ad-40a4-9252-ddd559cadea0.jpg"
+  },
+  {
+    "id": 28,
+    "name": "Kit Kat",
+    "price": 10,
+    "imageUrl": "/uploads/products/4f397bfc-f25f-4333-ac71-180b595038eb.jpg"
+  },
+  {
+    "id": 29,
+    "name": "Kit Kat Dark",
+    "price": 150,
+    "imageUrl": "/uploads/products/258a5ab7-c22b-4337-8246-b4dd8f43b189.jpg"
+  },
+  {
+    "id": 30,
+    "name": "Kit Kat Classic",
+    "price": 40,
+    "imageUrl": "/uploads/products/3aaed6c1-f7f6-4ec0-adde-c99e1aa11e01.jpg"
   }
 ]

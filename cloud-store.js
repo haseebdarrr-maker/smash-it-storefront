@@ -83,6 +83,16 @@ class CloudStore {
     return snapshot.docs.map((document) => ({ ...document.data(), id: document.id }));
   }
 
+  async updateOrder(id, updates) {
+    const reference = this.orders.doc(id);
+    return this.firestore.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(reference);
+      if (!snapshot.exists) return null;
+      transaction.update(reference, updates);
+      return { ...snapshot.data(), ...updates, id: snapshot.id };
+    });
+  }
+
   async updateOrderStatus(id, status) {
     const reference = this.orders.doc(id);
     return this.firestore.runTransaction(async (transaction) => {
